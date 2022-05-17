@@ -12,6 +12,7 @@ import 'src/common.dart';
 
 export 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
     show SignInOption;
+
 export 'src/common.dart';
 export 'widgets.dart';
 
@@ -93,7 +94,7 @@ class GoogleSignInAccount implements GoogleIdentity {
     }
 
     final GoogleSignInTokenData response =
-        await GoogleSignInPlatform.instance.getTokens(
+    await GoogleSignInPlatform.instance.getTokens(
       email: email,
       shouldRecoverAuth: true,
     );
@@ -232,7 +233,7 @@ class GoogleSignIn {
   final String? clientId;
 
   final StreamController<GoogleSignInAccount?> _currentUserController =
-      StreamController<GoogleSignInAccount?>.broadcast();
+  StreamController<GoogleSignInAccount?>.broadcast();
 
   /// Subscribe to this stream to be notified when the current user changes.
   Stream<GoogleSignInAccount?> get onCurrentUserChanged =>
@@ -265,7 +266,8 @@ class GoogleSignIn {
       scopes: scopes,
       hostedDomain: hostedDomain,
       clientId: clientId,
-    )..catchError((dynamic _) {
+    )
+      ..catchError((dynamic _) {
         // Invalidate initialization if it errors out.
         _initialization = null;
       });
@@ -293,8 +295,7 @@ class GoogleSignIn {
   /// The optional, named parameter [canSkipCall] lets the plugin know that the
   /// method call may be skipped, if there's already [_currentUser] information.
   /// This is used from the [signIn] and [signInSilently] methods.
-  Future<GoogleSignInAccount?> _addMethodCall(
-    Function method, {
+  Future<GoogleSignInAccount?> _addMethodCall(Function method, {
     bool canSkipCall = false,
   }) async {
     Future<GoogleSignInAccount?> response;
@@ -361,6 +362,17 @@ class GoogleSignIn {
     return GoogleSignInPlatform.instance.isSignedIn();
   }
 
+  Future<GoogleSignInUserData?> signInNative() async {
+    try {
+      final response = await GoogleSignInPlatform.instance.signIn();
+
+      return response;
+    } catch (e, stackTrace) {
+      print("$e - $stackTrace");
+      return null;
+    }
+  }
+
   /// Starts the interactive sign-in process.
   ///
   /// Returned Future resolves to an instance of [GoogleSignInAccount] for a
@@ -373,7 +385,7 @@ class GoogleSignIn {
   /// Re-authentication can be triggered only after [signOut] or [disconnect].
   Future<GoogleSignInAccount?> signIn() {
     final Future<GoogleSignInAccount?> result =
-        _addMethodCall(GoogleSignInPlatform.instance.signIn, canSkipCall: true);
+    _addMethodCall(signInNative, canSkipCall: true);
     bool isCanceled(dynamic error) =>
         error is PlatformException && error.code == kSignInCanceledError;
     return result.catchError((dynamic _) => null, test: isCanceled);
